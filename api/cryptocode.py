@@ -21,15 +21,12 @@ cur = con.cursor()
 api = Api(crypto_api)
 class CryptoAPI:        
     class Transactions(Resource):  
-        # @token_required
-        #current_price = 2
         increase_factor = 0.05
         price_fluctuation_range = (0.5,2)
         
         res = cur.execute("SELECT current_price from crypto_price")
         current_price=res.fetchone()[0] 
         print("CURRENT_PRICE:"+str(current_price))     
-        #print(type(current_price))  
         
         def price_adjustment(cls, transaction_type):
             if transaction_type == 'buy':
@@ -59,16 +56,16 @@ class CryptoAPI:
             else:
                 profit = 0
             return profit
-                                                    
+   
                                     
-        def post(self): # Create method
+        def post(self): 
             try:
                 body = request.get_json()
                 if not body:
                     return {'message': 'Please provide transaction details'}, 400
 
                 uid = body.get('uid')
-                transaction_type = body.get('type')  # 'buy' or 'sell'
+                transaction_type = body.get('type')  
                 amount = int(body.get('amount'))
                 
                 print(uid)
@@ -78,12 +75,10 @@ class CryptoAPI:
                 con = sqlite3.connect(dbURI)
                 cur = con.cursor()
                 res = cur.execute("SELECT ifnull(sum(case transaction_type when 'buy' then amount else -amount END),0) FROM transactions")
-                #print(len(res.fetchall()))
                 total_crypto_coins=res.fetchone()[0]              
-                #print(total_crypto_coins)
                 
-                print("CRYPTO1")
-                print(total_crypto_coins)
+                #print("CRYPTO1")
+                #print(total_crypto_coins)
                 
                 
                 
@@ -91,17 +86,16 @@ class CryptoAPI:
                 if not uid or not transaction_type or not amount:
                     return {'message': 'Incomplete transaction details'}, 400
 
-                # Retrieve user
                 user = User.query.filter_by(_uid=uid).first()
                 if not user:
                     return {'message': 'User not found'}, 404
                 
-                print(user.id)
+                #print(user.id)
                 cur = con.cursor()
                 res = cur.execute("SELECT ifnull(sum(case transaction_type when 'buy' then amount else -amount END),0) FROM transactions where user_id="+str(user.id))
                 current_user_tokens=res.fetchone()[0] 
-                print("USER TOKEN")
-                print(current_user_tokens)
+                #print("USER TOKEN")
+                #print(current_user_tokens)
                 
                 if transaction_type == 'sell':
                     if current_user_tokens < amount:
@@ -115,33 +109,23 @@ class CryptoAPI:
                 if t > 100:
                     return {'message': 'You are limited to only 100 coins'}, 400
                 
-                print("AFTER T")
+                #print("AFTER T")
                 initial_price = self.current_price
 
-                # Perform buy or sell transaction
                 if transaction_type == 'buy':
                     if amount <= 0:
                         return {'message': 'Invalid amount for buying'}, 400
-                    # Check if enough crypto available
                     if total_crypto_coins > 1000000:
                         return {'message': 'Exceeds available crypto limit'}, 400
-                    # Adjust user's crypto balance
-                    #user.crypto_balance += amount
-                else:  # Transaction type is 'sell'
+                    
+                else:  
                     if amount <= 0:
                         return {'message': 'Invalid amount for selling'}, 400
-                    # Check if user has enough crypto for selling
-                    # Adjust user's crypto balance
                     
-                # Adjust the price based on the transaction
-                print("BEFORE adjustment")
-                self.price_adjustment(transaction_type) #updates in the database
-                #final_price = self.current_price
+                    
+                #print("BEFORE adjustment")
+                self.price_adjustment(transaction_type) 
 
-                # Calculate profit
-                #profit = self.calculate_profit(transaction_type, initial_price, final_price, amount)
-
-                # Save the updated user information
                 
                 p = Transaction(user.id,amount,transaction_type,self.current_price)
                 p.create()
@@ -149,7 +133,6 @@ class CryptoAPI:
                 return {
                     'message': f'{transaction_type.capitalize()} transaction successful',
                     'current_price_per_coin': self.current_price,
-                    #'profit': profit
                 }, 200
 
             except Exception as e:
@@ -157,24 +140,20 @@ class CryptoAPI:
         
     
     
-        def get(self): # Create method
-                print("Hello Get")
-                #body=request.get_json()
-                #print(body)
+        def get(self): 
+                #print("Hello Get")
                 try:
-                    #print("Hello Get 2")
                     con = sqlite3.connect(dbURI)
                     cur = con.cursor()
                     res = cur.execute("SELECT current_price FROM crypto_price")
                     current_price=res.fetchone()[0] 
-                    print(current_price)             
-                    return current_price                
+                    #print(current_price)             
+                    #return current_price                
                     
                 except Exception as e:
-                    print(e)
+                    #print(e)
                     return {'message': 'Something went wrong', 'error': str(e)}
                 
-    # building RESTapi endpoint
     api.add_resource(Transactions, '/transactions')
 
     

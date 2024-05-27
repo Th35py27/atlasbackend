@@ -1,0 +1,13 @@
+-- database: /home/nandanv/vscode/atlasbackend/instance/volumes/sqlite.db
+
+-- Use the ▷ button in the top right corner to run the entire file.
+
+CREATE TABLE scores (
+    score_id INTEGER PRIMARY,
+    user_id INTEGER NOT NULL,
+    score REAL NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+
+

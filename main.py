@@ -17,6 +17,9 @@ from api.user import user_api # Blueprint import api definition
 from api.player import player_api
 from api.searchstocks import search_api
 from api.cryptocode import crypto_api
+from api.game import game_api
+from api.stats import stats_api
+
 # database migrations
 from model.users import initUsers
 from model.players import initPlayers
@@ -43,6 +46,8 @@ app.register_blueprint(player_api)
 app.register_blueprint(app_projects) # register app pages
 app.register_blueprint(search_api)
 app.register_blueprint(crypto_api)
+app.register_blueprint(game_api)
+app.register_blueprint(stats_api)
 
 @app.errorhandler(404)  # catch for URL not found
 def page_not_found(e):
