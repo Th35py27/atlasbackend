@@ -1,0 +1,23 @@
+{% extends "layouts/base.html" %}
+{% set project = "403" %}
+
+{% block body %}
+    <div class="index">
+        <div class="center-block" style="margin: 2% 10% 10%; font-family: gilroy,serif;">
+            <div class="col-12" style="text-align: center;">
+                <h1><strong>Unauthorized</strong></h1>
+            </div>
+
+            <div class="jumbotron jumbotron-fluid" style="text-align: center; ">
+                <h2>Try Again</h2>
+                <!-- Prompt the user to go back to where they were before 403 page showed -->
+                <a href="javascript:history.back()">Go Back</a>
+                <p>Or</p>
+                <a href="/register">Register</a><a> Or </a><a href="/signin">Sign in</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block background %}
+{% endblock %}

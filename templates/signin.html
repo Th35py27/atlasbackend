@@ -1,0 +1,68 @@
+<html>
+    <body>
+        <form action="javascript:sign_in()">
+            <p><label>
+                    Username:
+                    <input type="text" name="name" id="name" required>
+            </label></p>
+            <p><label>
+                User ID:
+                <input type="text" name="uid" id="uid" required>
+            </label></p>
+            <p><label>
+                Password:
+                <input type="password" name="password" id="password" required>
+            </label></p>
+            <p>
+                <button>Login</button>
+            </p>
+        </form>
+        <script>
+            // import { uri, options } from '/static/js/api/config.js';
+            window.sign_in = function signin(){
+                const authurl = '/api/users/authenticate';
+                const body = {
+                    name: document.getElementById('uid').value,
+                    uid: document.getElementById('uid').value,
+                    password: document.getElementById('password').value
+                };
+                const authOptions = {
+                    // ...options,
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
+                    cache: 'no-cache'
+                };
+                // Fetch the JWT
+                fetch(authurl, authOptions)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    // Console log the success
+                    var users = document.getElementById('users');
+                    if(users) {
+                        users.innerHTML = JSON.stringify(data);
+                    }
+                    alert("User Doesnt Exist");
+                    window.location.href = "/register";
+                })
+                .catch(err => {
+                    uid = document.getElementById('uid');
+                    window.localStorage.setItem('uid', uid)
+                    if (uid = 'admin') {
+                        window.location.href = "/display";
+                    }
+                    else {
+                        window.location.href = "/";
+                    }
+                    console.error(err);
+                    alert("User Authenticated Successfully");
+                    userBody = "{" + "uid: " + document.getElementById('uid').value + "," + " password: " + document.getElementById('password').value + "}";
+                    console.log(userBody);
+                    window.localStorage.setItem('userBody', userBody);
+                    console.log("User Auth Token Stored Successfully")
+                });
+            }
+        </script>
+    </body>
+</html>

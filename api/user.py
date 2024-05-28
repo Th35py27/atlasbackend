@@ -1,5 +1,6 @@
 import json, jwt
 from flask import Blueprint, request, jsonify, current_app, Response
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_restful import Api, Resource # used for REST API building
 from datetime import datetime
 from auth_middleware import token_required
@@ -9,13 +10,14 @@ from model.users import User
 user_api = Blueprint('user_api', __name__,
                    url_prefix='/api/users')
 
+
 # API docs https://flask-restful.readthedocs.io/en/latest/api.html
 api = Api(user_api)
 
 class UserAPI:        
     class _CRUD(Resource):  # User API operation for Create, Read.  THe Update, Delete methods need to be implemeented
-        @token_required
-        def post(self, current_user): # Create method
+        # @token_required
+        def post(self): # Create method
             ''' Read data for json body '''
             body = request.get_json()
             
@@ -31,10 +33,11 @@ class UserAPI:
             # look for password and dob
             password = body.get('password')
             dob = body.get('dob')
+            pnum = body.get('pnum')
+            email = body.get('email')
 
             ''' #1: Key code block, setup USER OBJECT '''
-            uo = User(name=name, 
-                      uid=uid)
+            uo = User(name=name, uid=uid, password=password, pnum=pnum, email=email, role="user")
             
             ''' Additional garbage error checking '''
             # set password if provided
@@ -47,6 +50,14 @@ class UserAPI:
                 except:
                     return {'message': f'Date of birth format error {dob}, must be mm-dd-yyyy'}, 400
             
+            if pnum is not None:
+                try:
+                    if pnum is None:
+                        pnum = "123-456-7890"
+                except:
+                    return {'message': f'Phone number format error {pnum}, must be 10 digits'}, 400
+            
+            
             ''' #2: Key Code block to add user to database '''
             # create user in database
             user = uo.create()
@@ -56,11 +67,35 @@ class UserAPI:
             # failure returns error
             return {'message': f'Processed {name}, either a format error or User ID {uid} is duplicate'}, 400
 
-        @token_required
-        def get(self, current_user): # Read Method
+        # @token_required
+        def get(self): # Read Method , current_user
             users = User.query.all()    # read/extract all users from database
             json_ready = [user.read() for user in users]  # prepare output in json
             return jsonify(json_ready)  # jsonify creates Flask response object, more specific to APIs than json.dumps
+        
+        # @token_required
+        def delete(self):
+            ''' Read data from json body '''
+            body = request.get_json()
+            ''' Avoid garbage in, error checking '''
+            # validate uid, name, and password
+            uid = body.get('uid')
+            password = body.get('password')
+            if uid is None or len(uid) < 2:
+                return {'message': f'User ID is missing, or is less than 2 characters'}, 400
+            if password is None or len(password) < 2:
+                return {'message': f'Password is missing, or is less than 2 characters'}, 400
+            ''' Find user '''
+            user = User.query.filter_by(_uid=uid).first()
+            if user is None:
+                return {'message': f'User {uid} not found'}, 400
+            ''' Confirm Password Is Valid'''
+            password = User.query.filter_by(password=password).first()
+            if password is None:
+                return {'message': f'Invalid password for user {uid}'}, 400
+            ''' Delete user '''
+            user.delete()
+            return {'message': f'User {uid} deleted'}, 200
     
     class _Security(Resource):
         def post(self):
@@ -101,10 +136,8 @@ class UserAPI:
                                 )
                         return resp
                     except Exception as e:
-                        return {
-                            "error": "Something went wrong",
-                            "message": str(e)
-                        }, 500
+                        current_app.logger.error('Error during authentication: %s', e)
+                        return {'message': 'Internal server error'}, 500
                 return {
                     "message": "Error fetching auth token!",
                     "data": None,

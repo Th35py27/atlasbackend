@@ -10,6 +10,10 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 
 from model.users import User
+<<<<<<< HEAD
+=======
+from model.crypto import Transaction
+>>>>>>> f1248a294673bef2e816a70d2d4ac5f9ba2826cd
 import sqlite3
 
 stats_api = Blueprint('stats_api', __name__,
