@@ -13,6 +13,7 @@ from __init__ import app, db
 from api.user import user_api
 from api.journal import journal_api
 from model.journals import initJournals
+from api.stats import stats_api
 
 # Initialize the SQLAlchemy object to work with the Flask app instance
 db.init_app(app)
@@ -27,6 +28,7 @@ db.init_app(app)
 # Register URIs
 app.register_blueprint(user_api)
 app.register_blueprint(journal_api)
+app.register_blueprint(stats_api)
 
 
 @app.errorhandler(404)  # catch for URL not found
